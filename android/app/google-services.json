@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "998637487270",
+    "firebase_url": "https://covid-19-tracker-95979.firebaseio.com",
+    "project_id": "covid-19-tracker-95979",
+    "storage_bucket": "covid-19-tracker-95979.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998637487270:android:cd9627ae7fba9e2c426067",
+        "android_client_info": {
+          "package_name": "com.issa.loubani.covid_tracker_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "998637487270-9rh2ujqv4a5mn34vrf4of4rapfkvlkaa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.issa.loubani.covid_tracker_app",
+            "certificate_hash": "f8a90edea60cdbac8aa906ad8970883dc0501624"
+          }
+        },
+        {
+          "client_id": "998637487270-nrf9h57eojukrisekgn0vh7jug6tcrn3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALN3u4A6mAbnggqMZSlJR_mAyHsTlh0rU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "998637487270-nrf9h57eojukrisekgn0vh7jug6tcrn3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998637487270:android:5caec4bbcfca53b8426067",
+        "android_client_info": {
+          "package_name": "com.issa.loubani.ping_sandbox_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "998637487270-kaqmaj10ispkbeoje1b97nkcoc1ddapr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.issa.loubani.ping_sandbox_app",
+            "certificate_hash": "f8a90edea60cdbac8aa906ad8970883dc0501624"
+          }
+        },
+        {
+          "client_id": "998637487270-nrf9h57eojukrisekgn0vh7jug6tcrn3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALN3u4A6mAbnggqMZSlJR_mAyHsTlh0rU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "998637487270-nrf9h57eojukrisekgn0vh7jug6tcrn3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
