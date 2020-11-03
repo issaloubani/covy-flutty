@@ -1,16 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-final Map daysOfTheWeek = <int, String>{
-  0: "Mon",
-  1: "Tue",
-  2: "Wed",
-  3: "Thur",
-  4: "Fri",
-  5: "Sat",
-  6: "Sun"
-};
 
 final chartTextStyle = TextStyle(
   color: Colors.white70,
@@ -35,12 +26,22 @@ class WeeklySummary extends StatefulWidget {
 }
 
 class _WeeklySummaryState extends State<WeeklySummary> {
+  final Map daysOfTheWeek = <int, String>{
+    0: "0".tr(),
+    1: "1".tr(),
+    2: "2".tr(),
+    3: "3".tr(),
+    4: "4".tr(),
+    5: "5".tr(),
+    6: "6".tr(),
+  };
+
   _markCurrentDay(int key) {
     // print("Key : $key");
     // print("daysOfTheWeek : ${daysOfTheWeek.keys.toList()[key]}");
     // print("Current Day : ${DateFormat("E").format(DateTime.now())}");
-    if (daysOfTheWeek.values.toList()[key] ==
-        DateFormat("E").format(DateTime.now())) {
+    if (key < 7 && daysOfTheWeek.values.toList()[key] ==
+        DateFormat("E",context.locale.languageCode).format(DateTime.now())) {
       return currentDayBarStyle;
     } else {
       return normalDayBarStyle;
@@ -64,13 +65,15 @@ class _WeeklySummaryState extends State<WeeklySummary> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ListTile(
-                  title: Text(DateFormat('MMMMd').format(DateTime.now()),
+                  title: Text(
+                      DateFormat('MMMMd', context.locale.languageCode)
+                          .format(DateTime.now()),
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 24,
                         color: Colors.white,
                       )),
-                  subtitle: Text("Weekly Summary",
+                  subtitle: Text("weekly_summary".tr(),
                       style: TextStyle(
                         fontWeight: FontWeight.normal,
                         fontSize: 14,
@@ -133,19 +136,19 @@ class _WeeklySummaryState extends State<WeeklySummary> {
                           getTitles: (double value) {
                             switch (value.toInt()) {
                               case 0:
-                                return "Mon";
+                                return "0".tr();
                               case 1:
-                                return "Tue";
+                                return "1".tr();
                               case 2:
-                                return "Wed";
+                                return "2".tr();
                               case 3:
-                                return "Thu";
+                                return "3".tr();
                               case 4:
-                                return "Fri";
+                                return "4".tr();
                               case 5:
-                                return "Sat";
+                                return "5".tr();
                               case 6:
-                                return "Sun";
+                                return "6".tr();
                               default:
                                 return "";
                             }

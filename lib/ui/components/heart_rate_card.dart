@@ -1,7 +1,7 @@
 import 'package:covid_tracker_app/ui/pages/heart_rate_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-
+import 'package:easy_localization/easy_localization.dart';
 import '../../res.dart';
 
 class HeartRateCard extends StatelessWidget {
@@ -30,14 +30,14 @@ class HeartRateCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                    "PPG Finger Test",
+                    "covid_test_subtitle".tr(),
                     style: Theme.of(context).textTheme.headline6,
                   ),
                   SizedBox(height: 10),
                   Container(
                       width: 170,
                       child: Text(
-                          "Using the camera of you're phone we can detect the level of oxygen in your blood that may predict if you are infected with corona virus.",
+                          "covid_test_body".tr(),
                           style: TextStyle(
                               fontWeight: Theme.of(context)
                                   .textTheme

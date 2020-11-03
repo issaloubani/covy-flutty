@@ -1,5 +1,6 @@
 import 'package:covid_tracker_app/ui/components/symptom_card.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../res.dart';
 
@@ -22,35 +23,35 @@ class SymptomsList extends StatelessWidget {
             children: [
               SymptomCard(
                 image: Res.fever,
-                text: "Fever",
+                text: "fever".tr(),
               ),
               SizedBox(
                 width: 10,
               ),
               SymptomCard(
                 image: Res.dizzy,
-                text: "Dizzy",
+                text: "dizzy".tr(),
               ),
               SizedBox(
                 width: 10,
               ),
               SymptomCard(
                 image: Res.cough,
-                text: "Cough",
+                text: "cough".tr(),
               ),
               SizedBox(
                 width: 10,
               ),
               SymptomCard(
                 image: Res.sneeze,
-                text: "Sneeze",
+                text: "sneeze".tr(),
               ),
               SizedBox(
                 width: 10,
               ),
               SymptomCard(
                 image: Res.sore_throat,
-                text: "Sore throat",
+                text: "sore_throat".tr(),
               )
             ],
           ),

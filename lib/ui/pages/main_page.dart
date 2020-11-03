@@ -9,6 +9,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:geocoding/geocoding.dart' as Geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
@@ -20,29 +21,6 @@ const double DEFAULT_ZOOM = 19.0;
 
 enum MenuActions { first, second, third, fouth }
 
-var tips = [
-  TipPage(
-    animation: Res.wear_anim,
-    title: "Masks",
-    description:
-        "Masks decrease the rate of infection up to 90%, always wear a mask when going out.",
-    buttonText: "Okay",
-  ),
-  TipPage(
-    animation: Res.sanitizer_anim,
-    title: "Sanitizers",
-    description:
-        "Use sanitizers frequently especially when you are out of the home.",
-    buttonText: "Okay",
-  ),
-  TipPage(
-    animation: Res.sneezing_anim,
-    title: "Sneezing",
-    description:
-        "The most common transmission way of corona and most of virus is through sneesing, always use tissues when sneesing.",
-    buttonText: "Okay",
-  ),
-];
 
 class MainPage extends StatefulWidget {
   MainPage({Key key}) : super(key: key);
@@ -57,6 +35,26 @@ class _MainPageState extends State<MainPage> {
   String area = "";
   PermissionStatus _permissionGranted;
   GooMaps gooMaps = GooMaps();
+  var tips = [
+    TipPage(
+      animation: Res.wear_anim,
+      title: "tip_mask_title".tr(),
+      description: "tip_mask_body".tr(),
+      buttonText: "okay".tr(),
+    ),
+    TipPage(
+      animation: Res.sanitizer_anim,
+      title: "tip_sanitizer_title".tr(),
+      description: "tip_sanitizer_body".tr(),
+      buttonText: "okay".tr(),
+    ),
+    TipPage(
+      animation: Res.sneezing_anim,
+      title: "tip_sneeze_title".tr(),
+      description: "tip_sneeze_body".tr(),
+      buttonText: "okay".tr(),
+    ),
+  ];
 
   Future<LocationData> _getCurrentLocation() {
     return location.getLocation();
@@ -137,13 +135,26 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<String> _getAddressName(double lat, double lon) async {
-    final coordinates = new Coordinates(lat, lon);
-    List<Address> addresses =
-        await Geocoder.local.findAddressesFromCoordinates(coordinates);
-    Address first = addresses.first;
-    return "${first.subAdminArea}, ${first.countryCode}";
+    print("Getting address name....");
+    try {
+      final coordinates = new Coordinates(lat, lon);
+      // List<Address> addresses = await Geocoder.google(Config.googleMapsAPIKey,
+      //         language: context.locale.languageCode)
+      //     .findAddressesFromCoordinates(coordinates);
+      // List<Address> addresses =
+      //     await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      List<Geo.Placemark> placemarks = await Geo.placemarkFromCoordinates(
+          lat, lon,
+          localeIdentifier: context.locale.languageCode);
+      print("Placemark: ${placemarks.first}");
+      //Address first = addresses.first;
+      return "${placemarks.first.name} ${(context.locale.languageCode == 'ar') ? "،" : ","} ${placemarks.first.country}";
 //  print("Element : ${first.countryCode}"); // LB
 //  print("Element : ${first.subAdminArea}"); // alay
+    } catch (e) {
+      print("Error Getting address name : type: ${e.runtimeType} $e");
+      return "Error";
+    }
   }
 
   Future<void> _goToLocation(double lat, double lon) async {
@@ -235,10 +246,9 @@ class _MainPageState extends State<MainPage> {
           ),
           Padding(padding: EdgeInsets.all(5.0)),
           Flexible(
-            child: Text(
-              areaText,
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 18.0),
-            ),
+            child: Text(areaText, style: Theme.of(context).textTheme.bodyText2
+                //     style: TextStyle(fontWeight: Theme.of(context).textTheme.bodyText1.fontWeight, fontSize: 18.0),
+                ),
           ),
           Padding(padding: EdgeInsets.all(5.0)),
           PopupMenuButton(
@@ -254,12 +264,13 @@ class _MainPageState extends State<MainPage> {
                     ),
                     Padding(padding: EdgeInsets.all(5.0)),
                     Flexible(
-                      child: Text(
-                        areaText,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w400, fontSize: 18.0),
-                      ),
-                    ),
+                      child: Text(areaText,
+                          style: Theme.of(context).textTheme.bodyText2
+                          //   style: TextStyle(
+                          //       fontWeight: FontWeight.w400, fontSize: 18.0),
+                          // ),
+                          ),
+                    )
                   ],
                 ),
               ),
@@ -291,11 +302,9 @@ class _MainPageState extends State<MainPage> {
             switch (result) {
               case MenuActions.first:
                 if (isLanguageChanged) {
-                  //  await initializeDateFormatting('en', null);
                   context.locale = Locale('en');
                 } else {
                   context.locale = Locale('ar');
-                  // await initializeDateFormatting('ar', null);
                 }
                 setState(() {
                   isLanguageChanged = !isLanguageChanged;
@@ -314,17 +323,17 @@ class _MainPageState extends State<MainPage> {
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuActions>>[
-            const PopupMenuItem<MenuActions>(
+            PopupMenuItem<MenuActions>(
               value: MenuActions.first,
-              child: Text('Switch Language'),
+              child: Text("change_language".tr()),
             ),
-            const PopupMenuItem<MenuActions>(
+            PopupMenuItem<MenuActions>(
               value: MenuActions.third,
-              child: Text('Settings'),
+              child: Text("settings".tr()),
             ),
-            const PopupMenuItem<MenuActions>(
+            PopupMenuItem<MenuActions>(
               value: MenuActions.fouth,
-              child: Text('About'),
+              child: Text("about".tr()),
             ),
           ],
         ),

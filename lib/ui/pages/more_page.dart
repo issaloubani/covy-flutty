@@ -8,6 +8,7 @@ import 'package:covid_tracker_app/ui/components/weekly_summary.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class MorePage extends StatefulWidget {
   MorePage({Key key}) : super(key: key);
@@ -21,6 +22,11 @@ class _MorePageState extends State<MorePage> {
     future: Statistics.getWeeklySummary(),
     builder: (context, snapshot) {
       if (snapshot.hasData) {
+        if(snapshot.data.length >= 7){
+          List<double> data = snapshot.data;
+          data = data.sublist(data.length - 7,data.length - 1);
+          return WeeklySummary(data);
+        }
         return WeeklySummary(snapshot.data);
       } else if (snapshot.hasError) {
         return Text("An Error Occurred");
@@ -104,9 +110,9 @@ class _MorePageState extends State<MorePage> {
             addAutomaticKeepAlives: true,
             shrinkWrap: true,
             children: [
-              TitleText(title: "Symptoms"),
+              TitleText(title: "symptoms".tr()),
               SymptomsList(),
-              TitleText(title: "Preventions"),
+              TitleText(title: "preventions".tr()),
               PreventionCard(),
               Align(
                 child: Material(
@@ -121,10 +127,10 @@ class _MorePageState extends State<MorePage> {
                   ),
                 ),
               ),
-              TitleText(title: "Statistics"),
+              TitleText(title: "statistics".tr()),
               dailySummary,
               weeklySummary,
-              TitleText(title: "Covid-19 Test"),
+              TitleText(title: "covid_test_title".tr()),
               HeartRateCard(),
             ],
           ),

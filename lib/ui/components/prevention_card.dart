@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -34,18 +35,19 @@ class PreventionCard extends StatelessWidget {
                 Lottie.asset(Res.wear_anim),
                 Positioned(
                     top: 28,
-                    left: 128,
+                    left: (context.locale.languageCode == 'ar') ? 0 : 128,
+                    right: (context.locale.languageCode == 'ar') ? 128 : 0,
                     child: Container(
                       width: MediaQuery.of(context).size.width - 170,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Wear Masks",
+                          Text("mask_prev_title".tr(),
                               style: Theme.of(context).textTheme.headline6),
                           SizedBox(height: 10),
                           Text(
-                              "Masks decrease the rate of infection up to 90%, always wear a mask when goind out.",
+                              "mask_prev_body".tr(),
                               style: TextStyle(
                                   fontWeight: Theme.of(context)
                                       .textTheme

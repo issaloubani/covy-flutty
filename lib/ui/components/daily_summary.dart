@@ -1,5 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'indicator.dart';
 
@@ -14,6 +14,12 @@ class DailySummary extends StatefulWidget {
 
 class _DailySummaryState extends State<DailySummary> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(18.0),
@@ -27,13 +33,15 @@ class _DailySummaryState extends State<DailySummary> {
           child: Column(
             children: [
               ListTile(
-                title: Text(DateFormat('EEEE').format(DateTime.now()),
+                title: Text(
+                    DateFormat('EEEE', context.locale.languageCode)
+                        .format(DateTime.now()),
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 24,
                       color: Colors.white,
                     )),
-                subtitle: Text("Daily Summary",
+                subtitle: Text("daily_summary".tr(),
                     style: TextStyle(
                       fontWeight: FontWeight.normal,
                       fontSize: 14,
@@ -64,15 +72,15 @@ class _DailySummaryState extends State<DailySummary> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Indicator(
-                            title: "Infected",
+                            title: "infected".tr(),
                             value: "${widget.infected}",
                             color: Colors.amber),
                         Indicator(
-                            title: "Recovered",
+                            title: "recovered".tr(),
                             value: "${widget.recovered}",
                             color: Colors.green),
                         Indicator(
-                            title: "Deaths",
+                            title: "deaths".tr(),
                             value: "${widget.deaths}",
                             color: Colors.red),
                       ]),

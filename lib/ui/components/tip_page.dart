@@ -30,6 +30,25 @@ class TipPage extends StatelessWidget {
             frameRate: FrameRate(60),
           ),
           Expanded(
+            child: Container(
+              child: Column(children: [
+                Text(title, style: Theme.of(context).textTheme.headline4),
+                SizedBox(height: 5,),
+                Container(width: MediaQuery.of(context).size.width - 80,child: Text(description,textAlign: TextAlign.center, style: Theme.of(context).textTheme.headline6)),
+                SizedBox(height: 20,),
+                RaisedButton(
+                  splashColor: Colors.green[300],
+                  color: Colors.green,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(buttonText,
+                      style: Theme.of(context).accentTextTheme.button),
+                )
+              ]),
+            ),
+          )
+          /*      Expanded(
             child: Material(
               elevation: 3,
               borderRadius: BorderRadius.only(
@@ -96,7 +115,7 @@ class TipPage extends StatelessWidget {
                         )
                       ])),
             ),
-          )
+          )*/
         ],
       ),
     ));
