@@ -16,7 +16,7 @@ class SymptomCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
-              offset: Offset(0, 10), blurRadius: 20, color: Colors.grey[300])
+              offset: Offset(0, 8), blurRadius: 5, color: Colors.grey[300])
         ],
       ),
       child: Column(

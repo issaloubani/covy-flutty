@@ -71,7 +71,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/anim/click_anim.json
     - assets/anim/corona_map_anim.json
+    - assets/anim/dev_anim.json
     - assets/anim/hear_anim.json
     - assets/anim/location_anim.json
     - assets/anim/placeholder_anim.json
@@ -82,6 +84,8 @@ flutter:
     - assets/anim/wash_hands_anim.json
     - assets/anim/wear_anim.json
     - assets/anim/work_from_home_anim.json
+    - assets/icons/america_flag.svg
+    - assets/icons/lebanon_flag.svg
     - assets/icons/location.svg
     - assets/icons/menu.svg
     - assets/icons/tip.svg

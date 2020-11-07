@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:covid_tracker_app/res.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -9,8 +10,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:string_validator/string_validator.dart';
+
 import 'modules/MessageSender.dart';
+import 'ui/pages/language_page.dart';
 import 'ui/pages/main_page.dart';
 
 const int BROADCAST_TIMEOUT = 2;
@@ -22,14 +26,7 @@ void main() async {
       supportedLocales: [Locale('en'), Locale('ar')],
       path: 'assets/translations', // <-- change patch to your
       fallbackLocale: Locale('en'),
-      child: MainApp()));
-}
-
-class MainApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return App();
-  }
+      child: App()));
 }
 
 class App extends StatefulWidget {
@@ -41,13 +38,13 @@ class _AppState extends State<App> {
   static final FirebaseMessaging _fcm = FirebaseMessaging();
   CollectionReference tokens = FirebaseFirestore.instance.collection('tokens');
   static CollectionReference met;
-
+  SharedPreferences sharedPreferences;
   static Location location = new Location();
   String locationStr = "";
   bool _serviceEnabled;
   PermissionStatus _permissionGranted;
 
-  Future<String> _initMeetingRef() async {
+  Future<void> _initMeetingRef() async {
     met = FirebaseFirestore.instance
         .collection('tokens')
         .doc(await _fcm.getToken())
@@ -64,6 +61,16 @@ class _AppState extends State<App> {
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
       if (!_serviceEnabled) {
+        // showDialog(
+        //   context: context,
+        //   builder: (context) {
+        //     return AlertDialog(
+        //       title: Text("We Need Your Permission"),
+        //       content: Text(
+        //           "This app need location permission to function properly"),
+        //     );
+        //   },
+        // );
         return null;
       }
     }
@@ -72,9 +79,20 @@ class _AppState extends State<App> {
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
+        // showDialog(
+        //   context: context,
+        //   builder: (context) {
+        //     return AlertDialog(
+        //       title: Text("We Need Your Permission"),
+        //       content: Text(
+        //           "This app need location permission to function properly"),
+        //     );
+        //   },
+        // );
         return null;
       }
     }
+
     onComplete(await location.getLocation());
     return location.getLocation();
   }
@@ -108,18 +126,6 @@ class _AppState extends State<App> {
   static Future<dynamic> _onBackgroundMessageHandler(
       Map<String, dynamic> message) async {
     print("OnBackgroundMessage : $message");
-    // String msg = "postwoman";
-    // if (message['data']['message'] == msg) {
-    //   try {
-    //     Map<String, dynamic> data = Map.from(message['data']);
-    //     data['blah'] = "blahh";
-    //     data['message'] = 'postboy';
-    //     var msgSent = {"data": data, "to": "${await _fcm.getToken()}"};
-    //     MessageSender.sendMessage(msgSent);
-    //   } catch (e) {
-    //     print('error $e');
-    //   }
-    // }
     if (message['data']['sender'] != null &&
         message['data']['sender'] != await _fcm.getToken()) {
       // not send by the same device
@@ -236,7 +242,7 @@ class _AppState extends State<App> {
       onBackgroundMessage: _onBackgroundMessageHandler,
       onMessage: _onMessageHandler,
     );
-
+    //  _loadDependencies();
     super.initState();
   }
 
@@ -254,7 +260,7 @@ class _AppState extends State<App> {
         theme: ThemeData(primaryColor: Colors.green[400]),
         home: FutureBuilder(
           // Initialize FlutterFire:
-          future: Firebase.initializeApp(),
+          future: _initFirebase(),
           builder: (context, snapshot) {
             // Check for errors
             if (snapshot.hasError) {
@@ -263,7 +269,11 @@ class _AppState extends State<App> {
 
             // Once complete, show your application
             if (snapshot.connectionState == ConnectionState.done) {
-              return MainPage();
+              if (sharedPreferences.containsKey('opened')) {
+                return MainPage();
+              }
+
+              return LanguagePage(context: context);
             }
 
             // Otherwise, show something whilst waiting for initialization to complete
@@ -272,5 +282,10 @@ class _AppState extends State<App> {
             );
           },
         ));
+  }
+
+  _initFirebase() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    return Firebase.initializeApp();
   }
 }

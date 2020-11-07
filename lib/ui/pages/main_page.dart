@@ -1,15 +1,12 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:covid_tracker_app/common/goo_maps.dart';
 import 'package:covid_tracker_app/ui/components/bubble_icon.dart';
 import 'package:covid_tracker_app/ui/components/drag_handler.dart';
-import 'package:covid_tracker_app/ui/components/tip_page.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:geocoder/geocoder.dart';
-import 'package:geocoding/geocoding.dart' as Geo;
+import 'package:geocoding/geocoding.dart' as Geocoder;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
@@ -19,8 +16,7 @@ import 'drawer_page.dart';
 
 const double DEFAULT_ZOOM = 19.0;
 
-enum MenuActions { first, second, third, fouth }
-
+enum MenuActions { changeLanguage, settings, about }
 
 class MainPage extends StatefulWidget {
   MainPage({Key key}) : super(key: key);
@@ -35,26 +31,6 @@ class _MainPageState extends State<MainPage> {
   String area = "";
   PermissionStatus _permissionGranted;
   GooMaps gooMaps = GooMaps();
-  var tips = [
-    TipPage(
-      animation: Res.wear_anim,
-      title: "tip_mask_title".tr(),
-      description: "tip_mask_body".tr(),
-      buttonText: "okay".tr(),
-    ),
-    TipPage(
-      animation: Res.sanitizer_anim,
-      title: "tip_sanitizer_title".tr(),
-      description: "tip_sanitizer_body".tr(),
-      buttonText: "okay".tr(),
-    ),
-    TipPage(
-      animation: Res.sneezing_anim,
-      title: "tip_sneeze_title".tr(),
-      description: "tip_sneeze_body".tr(),
-      buttonText: "okay".tr(),
-    ),
-  ];
 
   Future<LocationData> _getCurrentLocation() {
     return location.getLocation();
@@ -137,18 +113,17 @@ class _MainPageState extends State<MainPage> {
   Future<String> _getAddressName(double lat, double lon) async {
     print("Getting address name....");
     try {
-      final coordinates = new Coordinates(lat, lon);
       // List<Address> addresses = await Geocoder.google(Config.googleMapsAPIKey,
       //         language: context.locale.languageCode)
       //     .findAddressesFromCoordinates(coordinates);
       // List<Address> addresses =
       //     await Geocoder.local.findAddressesFromCoordinates(coordinates);
-      List<Geo.Placemark> placemarks = await Geo.placemarkFromCoordinates(
-          lat, lon,
-          localeIdentifier: context.locale.languageCode);
+      List<Geocoder.Placemark> placemarks =
+          await Geocoder.placemarkFromCoordinates(lat, lon,
+              localeIdentifier: context.locale.languageCode);
       print("Placemark: ${placemarks.first}");
       //Address first = addresses.first;
-      return "${placemarks.first.name} ${(context.locale.languageCode == 'ar') ? "،" : ","} ${placemarks.first.country}";
+      return "${placemarks.first.subAdministrativeArea} ${(context.locale.languageCode == 'ar') ? "،" : ","} ${placemarks.first.country}";
 //  print("Element : ${first.countryCode}"); // LB
 //  print("Element : ${first.subAdminArea}"); // alay
     } catch (e) {
@@ -183,38 +158,34 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => tips[Random().nextInt(tips.length - 0)],
-            ));
-          },
-          child: Icon(Icons.privacy_tip),
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () {
+        //     Tips.showTip(context: context);
+        //   },
+        //   child: Icon(Icons.privacy_tip),
+        // ),
         body: Stack(children: [
-          FutureBuilder(
-            future: _initLocation(),
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if (snapshot.hasData) {
-                print("Building Map...");
-                LocationData location = snapshot.data;
-                gooMaps
-                    .addCircle(LatLng(location.latitude, location.longitude));
-                _goToLocation(location.latitude, location.longitude);
-                return Stack(children: [
-                  gooMaps,
-                  _initAppBar(context),
-                ]);
-              } else if (snapshot.hasError) {
-                return Text("Error !");
-              }
-              return Center(
-                  child: Lottie.asset(Res.location_anim,
-                      frameRate: FrameRate(60)));
-            },
-          ),
-          _initBottomDrawerSheet()
-        ]));
+      FutureBuilder(
+        future: _initLocation(),
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (snapshot.hasData) {
+            print("Building Map...");
+            LocationData location = snapshot.data;
+            gooMaps.addCircle(LatLng(location.latitude, location.longitude));
+            _goToLocation(location.latitude, location.longitude);
+            return Stack(children: [
+              gooMaps,
+              _initAppBar(context),
+            ]);
+          } else if (snapshot.hasError) {
+            return Text("Error !");
+          }
+          return Center(
+              child: Lottie.asset(Res.location_anim, frameRate: FrameRate(60)));
+        },
+      ),
+      _initBottomDrawerSheet()
+    ]));
   }
 
   _notificationIcon() {
@@ -300,7 +271,7 @@ class _MainPageState extends State<MainPage> {
         child: PopupMenuButton(
           onSelected: (MenuActions result) async {
             switch (result) {
-              case MenuActions.first:
+              case MenuActions.changeLanguage:
                 if (isLanguageChanged) {
                   context.locale = Locale('en');
                 } else {
@@ -311,28 +282,43 @@ class _MainPageState extends State<MainPage> {
                 });
 
                 break;
-              case MenuActions.second:
+              case MenuActions.settings:
                 // TODO: Handle this case.
                 break;
-              case MenuActions.third:
-                // TODO: Handle this case.
-                break;
-              case MenuActions.fouth:
-                // TODO: Handle this case.
+              case MenuActions.about:
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (BuildContext context) {
+                  return Scaffold(
+                    body: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Lottie.asset(Res.dev_anim),
+                          Text(
+                            "Made with ❤ and Developed by Issa loubani 😁 ",
+                            style: Theme.of(context).textTheme.headline4,
+                            textAlign: TextAlign.center,
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                }));
                 break;
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuActions>>[
             PopupMenuItem<MenuActions>(
-              value: MenuActions.first,
+              value: MenuActions.changeLanguage,
               child: Text("change_language".tr()),
             ),
             PopupMenuItem<MenuActions>(
-              value: MenuActions.third,
+              value: MenuActions.settings,
               child: Text("settings".tr()),
             ),
             PopupMenuItem<MenuActions>(
-              value: MenuActions.fouth,
+              value: MenuActions.about,
               child: Text("about".tr()),
             ),
           ],

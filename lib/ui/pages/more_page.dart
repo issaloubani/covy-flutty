@@ -1,4 +1,5 @@
 import 'package:covid_tracker_app/common/statistics.dart' as Statistics;
+import 'package:covid_tracker_app/modules/Tips.dart';
 import 'package:covid_tracker_app/ui/components/daily_summary.dart';
 import 'package:covid_tracker_app/ui/components/heart_rate_card.dart';
 import 'package:covid_tracker_app/ui/components/prevention_card.dart';
@@ -123,7 +124,9 @@ class _MorePageState extends State<MorePage> {
                     splashRadius: 30.0,
                     icon: Icon(Icons.keyboard_arrow_down),
                     tooltip: "more",
-                    onPressed: () {},
+                    onPressed: () {
+                      Tips.showTip(context: context);
+                    },
                   ),
                 ),
               ),

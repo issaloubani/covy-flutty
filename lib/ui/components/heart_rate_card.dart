@@ -52,7 +52,7 @@ class HeartRateCard extends StatelessWidget {
                     },
                     color: Color(0xFFEF4E7F),
                     child: Text(
-                      "Start",
+                      "start".tr(),
                       style: Theme.of(context).accentTextTheme.button,
                     ),
                   ),
