@@ -1,6 +1,7 @@
 import 'package:covid_tracker_app/ui/components/flag_animate.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../res.dart';
@@ -8,8 +9,15 @@ import 'main_page.dart';
 
 class LanguagePage extends StatefulWidget {
   final BuildContext context;
+  final LocationData locationData;
+  final Key mainPageKey;
 
-  LanguagePage({Key key, @required this.context}) : super(key: key);
+  LanguagePage(
+      {Key key,
+      @required this.context,
+      @required this.locationData,
+      @required this.mainPageKey})
+      : super(key: key);
 
   @override
   _LanguagePageState createState() => _LanguagePageState();
@@ -103,7 +111,9 @@ class _LanguagePageState extends State<LanguagePage> {
                         : Locale('en');
                     Navigator.pushReplacement(context, MaterialPageRoute(
                       builder: (context) {
-                        return MainPage();
+                        return MainPage(
+                            locationData: widget.locationData,
+                            key: widget.mainPageKey);
                       },
                     ));
                   },

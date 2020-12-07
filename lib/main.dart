@@ -13,6 +13,7 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:string_validator/string_validator.dart';
 
+import 'common/custom_exceptions.dart';
 import 'modules/MessageSender.dart';
 import 'ui/pages/language_page.dart';
 import 'ui/pages/main_page.dart';
@@ -40,14 +41,16 @@ class _AppState extends State<App> {
   static CollectionReference met;
   SharedPreferences sharedPreferences;
   static Location location = new Location();
-  String locationStr = "";
+  String deviceToken = "";
   bool _serviceEnabled;
+  LocationData locationData;
   PermissionStatus _permissionGranted;
+  GlobalKey<MainPageState> mainPageKey = GlobalKey<MainPageState>();
 
-  Future<void> _initMeetingRef() async {
+  Future<void> createMetRef(String token) async {
     met = FirebaseFirestore.instance
         .collection('tokens')
-        .doc(await _fcm.getToken())
+        .doc(token)
         .collection('met');
   }
 
@@ -55,65 +58,32 @@ class _AppState extends State<App> {
     return location.getLocation();
   }
 
-  Future<LocationData> _initLocation(
-      {Function(LocationData) onComplete}) async {
+  Future<LocationData> initLocation() async {
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        // showDialog(
-        //   context: context,
-        //   builder: (context) {
-        //     return AlertDialog(
-        //       title: Text("We Need Your Permission"),
-        //       content: Text(
-        //           "This app need location permission to function properly"),
-        //     );
-        //   },
-        // );
-        return null;
-      }
+      if (!_serviceEnabled) {}
     }
 
     _permissionGranted = await location.hasPermission();
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
-        // showDialog(
-        //   context: context,
-        //   builder: (context) {
-        //     return AlertDialog(
-        //       title: Text("We Need Your Permission"),
-        //       content: Text(
-        //           "This app need location permission to function properly"),
-        //     );
-        //   },
-        // );
-        return null;
+        throw LocationDeniedException();
       }
     }
 
-    onComplete(await location.getLocation());
+    if (_permissionGranted == PermissionStatus.deniedForever) {
+      throw LocationDeniedForeverException();
+    }
+
     return location.getLocation();
   }
 
-  Widget _placeholderWidget(String value) {
-    switch (value.toLowerCase()) {
-      case "loading":
-        return Text("Loading...");
-        break;
-      case "error":
-        return Text("Something Went Wrong...");
-        break;
-      default:
-        return Text("Something as a placeholder text....");
-        break;
-    }
-  }
-
-  Future<void> _saveDeviceToken() async {
-    String deviceToken = await _fcm.getToken();
-    await tokens.doc(deviceToken).set({'token': '$deviceToken'});
+  Future<void> saveDeviceToken(String token) async {
+    await tokens.doc(token).set({'token': '$token'}).catchError((error) {
+      throw Exception(error.toString());
+    });
   }
 
   static double _calculateDistance(LatLng init, LatLng sender) {
@@ -133,13 +103,17 @@ class _AppState extends State<App> {
     }
   }
 
-  static Future<dynamic> _onMessageHandler(Map<String, dynamic> message) async {
+  Future<dynamic> _onMessageHandler(Map<String, dynamic> message) async {
     print("OnMessage : $message");
     if (message['data']['sender'] != null &&
         message['data']['sender'] != await _fcm.getToken()) {
       // not send by the same device
       _checkBroadcast(message);
     }
+
+    print("Animation Triggered!!");
+    mainPageKey.currentState.controller.reset();
+    mainPageKey.currentState.controller.forward();
   }
 
   static Future<void> _checkBroadcast(Map<String, dynamic> message) async {
@@ -187,66 +161,6 @@ class _AppState extends State<App> {
   }
 
   @override
-  void initState() {
-    print("Main App initialization");
-    _initMeetingRef();
-    _saveDeviceToken();
-    _initLocation(onComplete: (location) {
-      // init send
-      _fcm.getToken().then((currentDeviceToken) => {
-            tokens.get().then((QuerySnapshot querySnapshot) {
-              List<String> ids = querySnapshot.docs
-                  .asMap()
-                  .map((key, value) => MapEntry(key, value.id))
-                  .values
-                  .toList();
-
-              //   Timer.periodic(Duration(seconds: 10), (timer) {
-              MessageSender.sendPingBroadcast(
-                  response: false,
-                  registrationsId: ids,
-                  la: location.latitude,
-                  lo: location.longitude,
-                  from: currentDeviceToken);
-              //   });
-            })
-          });
-
-      // repeat
-      Future.delayed(Duration(minutes: BROADCAST_TIMEOUT), () {
-        Timer.periodic(Duration(minutes: BROADCAST_TIMEOUT), (timer) {
-          _getCurrentLocation().then((location) {
-            _fcm.getToken().then((currentDeviceToken) => {
-                  tokens.get().then((QuerySnapshot querySnapshot) {
-                    List<String> ids = querySnapshot.docs
-                        .asMap()
-                        .map((key, value) => MapEntry(key, value.id))
-                        .values
-                        .toList();
-
-                    //   Timer.periodic(Duration(seconds: 10), (timer) {
-                    MessageSender.sendPingBroadcast(
-                        response: false,
-                        registrationsId: ids,
-                        la: location.latitude,
-                        lo: location.longitude,
-                        from: currentDeviceToken);
-                    //   });
-                  })
-                });
-          });
-        });
-      });
-    });
-    _fcm.configure(
-      onBackgroundMessage: _onBackgroundMessageHandler,
-      onMessage: _onMessageHandler,
-    );
-    //  _loadDependencies();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
         localizationsDelegates: [
@@ -257,35 +171,123 @@ class _AppState extends State<App> {
         supportedLocales: EasyLocalization.of(context).supportedLocales,
         locale: EasyLocalization.of(context).locale,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(primaryColor: Colors.green[400]),
+        theme: ThemeData(primaryColor: Colors.green[400],cursorColor: Colors.green[500]),
         home: FutureBuilder(
           // Initialize FlutterFire:
-          future: _initFirebase(),
+          future: _initApp(),
           builder: (context, snapshot) {
             // Check for errors
             if (snapshot.hasError) {
-              return _placeholderWidget("error");
+              return Scaffold(
+                  body: Center(
+                      child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Lottie.asset(Res.error_anim),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("location_error".tr(),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  RaisedButton(
+                      onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => App(),
+                          )),
+                      child: Text(
+                        "okay".tr(),
+                        style: Theme.of(context).accentTextTheme.button,
+                      ),
+                      color: Colors.green)
+                ],
+              )));
             }
 
             // Once complete, show your application
             if (snapshot.connectionState == ConnectionState.done) {
               if (sharedPreferences.containsKey('opened')) {
-                return MainPage();
+                return MainPage(
+                  locationData: locationData,
+                  key: mainPageKey,
+                );
               }
 
-              return LanguagePage(context: context);
+              return LanguagePage(
+                context: context,
+                locationData: locationData,
+                mainPageKey: mainPageKey,
+              );
             }
 
             // Otherwise, show something whilst waiting for initialization to complete
             return Scaffold(
-              body: Center(child: Lottie.asset(Res.splash_anim)),
+              body: Center(
+                child: Lottie.asset(
+                  Res.splash_anim,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                ),
+              ),
             );
           },
         ));
   }
 
-  _initFirebase() async {
+  Future<void> _initApp() async {
+    // get device token
+    deviceToken = await _fcm.getToken();
+    await createMetRef(deviceToken);
+    await saveDeviceToken(deviceToken);
+    locationData = await initLocation();
+    _initFCMMessages(locationData, deviceToken);
     sharedPreferences = await SharedPreferences.getInstance();
-    return Firebase.initializeApp();
+  }
+
+  _initFCMMessages(LocationData location, String token) {
+    tokens.get().then((QuerySnapshot querySnapshot) {
+      List<String> ids = querySnapshot.docs
+          .asMap()
+          .map((key, value) => MapEntry(key, value.id))
+          .values
+          .toList();
+
+      //   Timer.periodic(Duration(seconds: 10), (timer) {
+      MessageSender.sendPingBroadcast(
+          response: false,
+          registrationsId: ids,
+          la: location.latitude,
+          lo: location.longitude,
+          from: token);
+    });
+
+    Future.delayed(Duration(minutes: BROADCAST_TIMEOUT), () {
+      Timer.periodic(Duration(minutes: BROADCAST_TIMEOUT), (timer) {
+        _getCurrentLocation().then((location) {
+          tokens.get().then((QuerySnapshot querySnapshot) {
+            List<String> ids = querySnapshot.docs
+                .asMap()
+                .map((key, value) => MapEntry(key, value.id))
+                .values
+                .toList();
+
+            //   Timer.periodic(Duration(seconds: 10), (timer) {
+            MessageSender.sendPingBroadcast(
+                response: false,
+                registrationsId: ids,
+                la: location.latitude,
+                lo: location.longitude,
+                from: token);
+            //   });
+          });
+        });
+      });
+      _fcm.configure(
+        onBackgroundMessage: _onBackgroundMessageHandler,
+        onMessage: _onMessageHandler,
+      );
+    });
   }
 }

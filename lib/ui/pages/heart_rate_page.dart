@@ -1,8 +1,14 @@
 import 'dart:async';
+import 'dart:math';
+import 'dart:ui' as UI;
 
 import 'package:camera/camera.dart';
+import 'package:covid_tracker_app/res.dart';
 import 'package:covid_tracker_app/ui/components/chart.dart';
+import 'package:covid_tracker_app/ui/pages/hear_rate_monitor.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:wakelock/wakelock.dart';
 
 class HeartRatePage extends StatefulWidget {
@@ -16,21 +22,26 @@ class _HeartRatePageState extends State<HeartRatePage>
     with SingleTickerProviderStateMixin {
   bool _toggled = false; // toggle button value
   List<SensorValue> _data = List<SensorValue>(); // array to store the values
+  List<double> _avgBlueData = List<double>(); // array to store the values
   CameraController _controller;
   double _alpha = 0.3; // factor for the mean value
   AnimationController _animationController;
   double _iconScale = 1;
+  int _o2 = 0;
   int _bpm = 0; // beats per minute
   int _fs = 30; // sampling frequency (fps)
   int _windowLen = 30 * 6; // window length to display - 6 seconds
   CameraImage _image; // store the last camera image
   double _avg; // store the average value during calculation
+  double _avgBlue; // store the average blue value during calculation
   DateTime _now; // store the now Datetime
   Timer _timer; // timer for image processing
+  AnimationController breathAnimationController;
 
   @override
   void initState() {
     super.initState();
+
     _animationController =
         AnimationController(duration: Duration(milliseconds: 500), vsync: this);
     _animationController
@@ -92,8 +103,8 @@ class _HeartRatePageState extends State<HeartRatePage>
                                 padding: EdgeInsets.all(4),
                                 child: Text(
                                   _toggled
-                                      ? "Cover both the camera and the flash with your finger"
-                                      : "Camera feed will display here",
+                                      ? "finger_instruction".tr()
+                                      : "camera_feed".tr(),
                                   style: TextStyle(
                                       backgroundColor: _toggled
                                           ? Colors.white
@@ -114,7 +125,7 @@ class _HeartRatePageState extends State<HeartRatePage>
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Text(
-                            "Estimated BPM",
+                            "estimated_bpm".tr(),
                             style: TextStyle(fontSize: 18, color: Colors.grey),
                           ),
                           Text(
@@ -149,15 +160,48 @@ class _HeartRatePageState extends State<HeartRatePage>
               ),
             ),
             Expanded(
+              flex: 0,
+              child: Text(
+                "heart_rate_monitor".tr(),
+              ),
+            ),
+            Expanded(
               flex: 1,
-              child: Container(
-                margin: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(18),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Lottie.asset(
+                            Res.breathing_anim,
+                            controller: _animationController,
+                            height: 120,
+                          ),
+                          Text(
+                            "oxygen_saturation".tr(),
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                          Text(
+                            (_o2 != 0) ? "$_o2 %" : "--",
+                            textDirection: UI.TextDirection.ltr,
+                            style: TextStyle(
+                                fontSize: 32, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
-                    color: Colors.black),
-                child: Chart(_data),
+                    Expanded(
+                      child: HearRateMonitor(
+                        data: _data,
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ],
@@ -238,11 +282,16 @@ class _HeartRatePageState extends State<HeartRatePage>
     _avg =
         image.planes.first.bytes.reduce((value, element) => value + element) /
             image.planes.first.bytes.length;
+    _avgBlue =
+        image.planes[2].bytes.reduce((value, element) => value + element) /
+            image.planes[2].bytes.length;
+
     if (_data.length >= _windowLen) {
       _data.removeAt(0);
     }
     setState(() {
       _data.add(SensorValue(_now, _avg));
+      _avgBlueData.add(_avgBlue);
     });
   }
 
@@ -288,14 +337,54 @@ class _HeartRatePageState extends State<HeartRatePage>
       }
       if (_counter > 0) {
         _bpm = _bpm / _counter;
+        double o2 = calculateOxygenSaturation(
+            _avgBlueData,
+            _values
+                .asMap()
+                .map((key, value) => MapEntry(key, value.value))
+                .values
+                .toList(),
+            _counter);
         print(_bpm);
+        print("Oxygen Saturation : $o2");
         setState(() {
           this._bpm = ((1 - _alpha) * _bpm + _alpha * _bpm).toInt();
+          this._o2 = o2.toInt();
         });
       }
       await Future.delayed(Duration(
           milliseconds:
               1000 * _windowLen ~/ _fs)); // wait for a new set of _data values
     }
+  }
+
+  double calculateOxygenSaturation(
+      List<double> avgBlueList, List<double> avgRedList, int frameCounter) {
+    double meanR = (avgRedList.reduce(
+                (value, element) => value + element / avgRedList.length) /
+            frameCounter)
+        .toDouble();
+    double meanB = (avgBlueList.reduce(
+                (value, element) => value + element / avgBlueList.length) /
+            frameCounter)
+        .toDouble();
+    double standardDevB = 0;
+    double standardDevR = 0;
+
+    for (int i = 0; i < frameCounter - 1; i++) {
+      double bufferB = avgBlueList[i];
+      standardDevB = (standardDevB + (bufferB - meanB) * (bufferB - meanB));
+      double bufferR = avgRedList[i];
+      standardDevR = (standardDevR + (bufferR - meanR) * (bufferR - meanR));
+    }
+
+    double varr = sqrt((standardDevR / (frameCounter - 1)).toDouble());
+    double varb = sqrt((standardDevB / (frameCounter - 1)).toDouble());
+
+    double R = varr / meanR / (varb / meanB);
+
+    double spo2 = 100 - 5 * R;
+    double o2 = spo2;
+    return o2;
   }
 }

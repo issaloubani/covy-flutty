@@ -73,15 +73,15 @@ class _DailySummaryState extends State<DailySummary> {
                       children: [
                         Indicator(
                             title: "infected".tr(),
-                            value: "${widget.infected}",
+                            value: "${NumberFormat.compact(locale: context.locale.languageCode).format(widget.infected)}",
                             color: Colors.amber),
                         Indicator(
                             title: "recovered".tr(),
-                            value: "${widget.recovered}",
+                            value: "${NumberFormat.compact(locale: context.locale.languageCode).format(widget.recovered)}",
                             color: Colors.green),
                         Indicator(
                             title: "deaths".tr(),
-                            value: "${widget.deaths}",
+                            value: "${NumberFormat.compact(locale: context.locale.languageCode).format(widget.deaths)}",
                             color: Colors.red),
                       ]),
                 ),

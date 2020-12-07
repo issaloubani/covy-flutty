@@ -34,5 +34,12 @@
   "tip_sneeze_body": "The most common transmission way of corona and most of virus is through sneezing, always use tissues when sneezing",
   "tip_sanitizer_title": "Sanitizers",
   "tip_sanitizer_body": "Use sanitizers frequently especially when you are out of the home",
-  "start": "Start"
+  "start": "Start",
+  "location_error": "Sorry But We Need You To Give Us Permission To Access You're Location Or The App Will Not Function Properly !",
+  "about_body": "Made with ❤ and Developed by Issa loubani 😁",
+  "heart_rate_monitor": "Heart Rate Monitor",
+  "oxygen_saturation": "Oxygen Saturation",
+  "camera_feed": "Camera feed will display here",
+  "finger_instruction": "Cover both the camera and the flash with your finger",
+  "estimated_bpm": "Estimated BPM"
 }

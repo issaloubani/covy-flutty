@@ -1,13 +1,15 @@
 import 'dart:async';
+import 'dart:collection';
 
-import 'package:covid_tracker_app/common/goo_maps.dart';
 import 'package:covid_tracker_app/ui/components/bubble_icon.dart';
 import 'package:covid_tracker_app/ui/components/drag_handler.dart';
+import 'package:covid_tracker_app/ui/pages/bot_page.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart' as Geocoder;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as Map;
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
 
@@ -19,43 +21,26 @@ const double DEFAULT_ZOOM = 19.0;
 enum MenuActions { changeLanguage, settings, about }
 
 class MainPage extends StatefulWidget {
-  MainPage({Key key}) : super(key: key);
+  final LocationData locationData;
+
+  MainPage({Key key, @required this.locationData}) : super(key: key);
 
   @override
-  _MainPageState createState() => _MainPageState();
+  MainPageState createState() => MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
-  Location location = new Location();
-  bool _serviceEnabled;
+class MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
+  final Set<Map.Marker> _markers = HashSet<Map.Marker>();
+  final Set<Map.Circle> _circles = HashSet<Map.Circle>();
+  final double radius = 30;
+  final Color circleColor = Colors.blue;
+  final int strokeWidth = 3;
+
   String area = "";
-  PermissionStatus _permissionGranted;
-  GooMaps gooMaps = GooMaps();
 
-  Future<LocationData> _getCurrentLocation() {
-    return location.getLocation();
-  }
-
-  Future<LocationData> _initLocation() async {
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return null;
-      }
-    }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return null;
-      }
-    }
-    LocationData locationData = await location.getLocation();
-    area = await _getAddressName(locationData.latitude, locationData.longitude);
-    return locationData;
-  }
+  AnimationController controller;
+  Completer<GoogleMapController> mapController;
 
   Widget _initAppBar(BuildContext appBarContext) {
     var isLanguageChanged = appBarContext.locale == Locale('en') ? false : true;
@@ -63,7 +48,19 @@ class _MainPageState extends State<MainPage> {
       height: 80,
       child: AppBar(
         elevation: 0.0,
-        title: _areaText(area),
+        title: FutureBuilder(
+          future: _getAddressName(
+              widget.locationData.latitude, widget.locationData.longitude),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return _areaText(snapshot.data);
+            } else if (snapshot.hasError) {
+              return _areaText("Error");
+            }
+            // loading data
+            return _areaAnimation();
+          },
+        ),
         backgroundColor: Colors.transparent,
         centerTitle: true,
         actions: [
@@ -77,7 +74,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget _initBottomDrawerSheet() {
     return DraggableScrollableSheet(
-      initialChildSize: 0.1,
+      initialChildSize: 0.2,
       minChildSize: 0.1,
       maxChildSize: 0.47,
       builder: (BuildContext context, _scrollController) {
@@ -124,82 +121,104 @@ class _MainPageState extends State<MainPage> {
       print("Placemark: ${placemarks.first}");
       //Address first = addresses.first;
       return "${placemarks.first.subAdministrativeArea} ${(context.locale.languageCode == 'ar') ? "،" : ","} ${placemarks.first.country}";
-//  print("Element : ${first.countryCode}"); // LB
-//  print("Element : ${first.subAdminArea}"); // alay
+      //  print("Element : ${first.countryCode}"); // LB
+      //  print("Element : ${first.subAdminArea}"); // alay
     } catch (e) {
       print("Error Getting address name : type: ${e.runtimeType} $e");
       return "Error";
     }
   }
 
-  Future<void> _goToLocation(double lat, double lon) async {
-    print("Lat, Lon: $lat, $lon");
-    final GoogleMapController controller = await gooMaps.getController();
-    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(lat, lon),
-      zoom: DEFAULT_ZOOM,
-    )));
-    // locationStr = await _getAddressName(lat, lon);
-    // print("Current Address : $locationStr");
+  // Future<void> _goToLocation(double lat, double lon) async {
+  //   print("Lat, Lon: $lat, $lon");
+  //   final GoogleMapController controller = await gooMaps.getController();
+  //   controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+  //     target: LatLng(lat, lon),
+  //     zoom: DEFAULT_ZOOM,
+  //   )));
+  //   // locationStr = await _getAddressName(lat, lon);
+  //   // print("Current Address : $locationStr");
+  // }
+
+  @override
+  void dispose() {
+    mapController.future.then((value) => dispose());
+    super.dispose();
   }
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    gooMaps.getController().then((value) => value.dispose());
+    controller = AnimationController(
+      vsync: this, //
+      duration: Duration(seconds: 1), // the SingleTickerProviderStateMixin
+    );
+    addCircle(
+        LatLng(widget.locationData.latitude, widget.locationData.longitude));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     Tips.showTip(context: context);
-        //   },
-        //   child: Icon(Icons.privacy_tip),
-        // ),
-        body: Stack(children: [
-      FutureBuilder(
-        future: _initLocation(),
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          if (snapshot.hasData) {
-            print("Building Map...");
-            LocationData location = snapshot.data;
-            gooMaps.addCircle(LatLng(location.latitude, location.longitude));
-            _goToLocation(location.latitude, location.longitude);
-            return Stack(children: [
-              gooMaps,
-              _initAppBar(context),
-            ]);
-          } else if (snapshot.hasError) {
-            return Text("Error !");
-          }
-          return Center(
-              child: Lottie.asset(Res.location_anim, frameRate: FrameRate(60)));
-        },
-      ),
-      _initBottomDrawerSheet()
-    ]));
+        body: Stack(
+      children: [
+        GoogleMap(
+          zoomControlsEnabled: false,
+          mapType: MapType.hybrid,
+          markers: _markers,
+          circles: _circles,
+          onMapCreated: (GoogleMapController controller) {
+            controller.animateCamera(CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    target: LatLng(widget.locationData.latitude,
+                        widget.locationData.longitude),
+                    zoom: DEFAULT_ZOOM)));
+            mapController.complete(controller);
+          },
+          initialCameraPosition: CameraPosition(target: LatLng(0, 0)),
+          trafficEnabled: true,
+        ),
+        _initAppBar(context),
+        _initBottomDrawerSheet()
+      ],
+    ));
   }
 
   _notificationIcon() {
-    return BubbleIcon(
-        onPressed: () {
-          print("Button Pressed !@");
-        },
-        icon: Icon(Icons.notifications_none_rounded));
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Ink(
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+        ),
+        child: IconButton(
+          alignment: Alignment.center,
+          splashRadius: 15.0,
+          onPressed: () {},
+          icon: Transform.scale(
+            scale: 1.0,
+            child: Lottie.asset(Res.notification_anim,
+                controller: controller, height: 30.0),
+          ),
+        ),
+      ),
+    );
   }
 
   _menuIcon() {
     return BubbleIcon(
-      icon: Icon(Icons.menu_outlined),
-      onPressed: () {},
+      icon: SvgPicture.asset(Res.robot),
+      onPressed: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) {
+            return BotPage();
+          },
+        ));
+      },
     );
   }
 
@@ -258,6 +277,24 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  _areaAnimation() {
+    return Container(
+      padding: EdgeInsets.all(10.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [Center(child: Lottie.asset(Res.location_anim, height: 30))],
+      ),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+      ),
+    );
+  }
+
   _moreIcon(BuildContext context, bool isLanguageChanged) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -296,7 +333,7 @@ class _MainPageState extends State<MainPage> {
                         children: [
                           Lottie.asset(Res.dev_anim),
                           Text(
-                            "Made with ❤ and Developed by Issa loubani 😁 ",
+                            "about_body".tr(),
                             style: Theme.of(context).textTheme.headline4,
                             textAlign: TextAlign.center,
                           )
@@ -325,5 +362,29 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+
+  // Future<void> _fetchLocationName() async {
+  //   gooMaps.addCircle(
+  //       LatLng(widget.locationData.latitude, widget.locationData.longitude));
+  //   _goToLocation(widget.locationData.latitude, widget.locationData.longitude);
+  //   area = await _getAddressName(
+  //       widget.locationData.latitude, widget.locationData.longitude);
+  // }
+
+  void addMarker(LatLng position) {
+    final String markerId = "marker_id${_markers.length}";
+    _markers.add(Map.Marker(position: position, markerId: MarkerId(markerId)));
+  }
+
+  void addCircle(LatLng position) {
+    final String circleId = "circle_id${_markers.length}";
+    _circles.add(Circle(
+        center: position,
+        circleId: CircleId(circleId),
+        radius: radius,
+        strokeWidth: strokeWidth,
+        strokeColor: circleColor.withOpacity(0.7),
+        fillColor: circleColor.withOpacity(0.5)));
   }
 }

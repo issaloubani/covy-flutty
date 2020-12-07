@@ -119,7 +119,8 @@ class _WeeklySummaryState extends State<WeeklySummary> {
                           }
                           if (value % 3 == 0) {
                             if (value > 1000) {
-                              return "${(value / 1000).toStringAsFixed(1)} K";
+                            //  return "${(value / 1000).toStringAsFixed(1)} K";
+                              return "${NumberFormat.compact().format(value)}";
                             }
                             return "${value.toInt()}";
                           }
