@@ -16,16 +16,16 @@ final FlLine gridLinesStyle = FlLine(
 final currentDayBarStyle = [Colors.white12, Colors.blue];
 final normalDayBarStyle = [Colors.white12, Colors.red];
 
-class WeeklySummary extends StatefulWidget {
+class WeeklySummaryUI extends StatefulWidget {
   final List<double> covidCases;
 
-  WeeklySummary(this.covidCases);
+  WeeklySummaryUI(this.covidCases);
 
   @override
-  _WeeklySummaryState createState() => _WeeklySummaryState();
+  _WeeklySummaryUIState createState() => _WeeklySummaryUIState();
 }
 
-class _WeeklySummaryState extends State<WeeklySummary> {
+class _WeeklySummaryUIState extends State<WeeklySummaryUI> {
   final Map daysOfTheWeek = <int, String>{
     0: "0".tr(),
     1: "1".tr(),

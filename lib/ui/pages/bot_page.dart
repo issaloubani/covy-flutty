@@ -83,6 +83,7 @@ class _BotPageState extends State<BotPage> {
             )),
             Flexible(
               child: ListView.builder(
+
                 reverse: true,
                 itemCount: messages.length,
                 itemBuilder: (context, index) => chat(context,

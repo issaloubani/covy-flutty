@@ -1,18 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import 'indicator.dart';
+import '../indicator.dart';
 
-class DailySummary extends StatefulWidget {
+class DailySummaryUI extends StatefulWidget {
   final infected, recovered, deaths;
 
-  DailySummary(this.infected, this.recovered, this.deaths);
+  DailySummaryUI(this.infected, this.recovered, this.deaths);
 
   @override
-  _DailySummaryState createState() => _DailySummaryState();
+  _DailySummaryUIState createState() => _DailySummaryUIState();
 }
 
-class _DailySummaryState extends State<DailySummary> {
+class _DailySummaryUIState extends State<DailySummaryUI> {
   @override
   void initState() {
     // TODO: implement initState

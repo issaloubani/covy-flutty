@@ -1,3 +1,4 @@
+import 'package:covid_tracker_app/ui/styles/AppBarItemStyle.dart';
 import 'package:flutter/material.dart';
 
 class BubbleIcon extends StatelessWidget {
@@ -11,12 +12,7 @@ class BubbleIcon extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Ink(
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-        ),
+        decoration: AppBarItemStyle.boxDecoration,
         child: IconButton(
           splashRadius: 15.0,
           onPressed: onPressed,

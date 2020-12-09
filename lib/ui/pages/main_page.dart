@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:covid_tracker_app/ui/components/bubble_icon.dart';
+import 'package:covid_tracker_app/ui/components/dailysummary/daily_summary.dart';
 import 'package:covid_tracker_app/ui/components/drag_handler.dart';
 import 'package:covid_tracker_app/ui/pages/bot_page.dart';
+import 'package:covid_tracker_app/ui/styles/AppBarItemStyle.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -12,9 +14,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as Map;
 import 'package:location/location.dart';
 import 'package:lottie/lottie.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../res.dart';
-import 'drawer_page.dart';
+import 'more_page.dart';
 
 const double DEFAULT_ZOOM = 19.0;
 
@@ -40,7 +43,8 @@ class MainPageState extends State<MainPage>
   String area = "";
 
   AnimationController controller;
-  Completer<GoogleMapController> mapController;
+  Completer<GoogleMapController> mapControllerCompleter = Completer();
+  GoogleMapController mapController;
 
   Widget _initAppBar(BuildContext appBarContext) {
     var isLanguageChanged = appBarContext.locale == Locale('en') ? false : true;
@@ -64,46 +68,11 @@ class MainPageState extends State<MainPage>
         backgroundColor: Colors.transparent,
         centerTitle: true,
         actions: [
-          _notificationIcon(),
+          notificationIcon(),
           _moreIcon(appBarContext, isLanguageChanged),
         ],
-        leading: _menuIcon(),
+        leading: leadingIcon(),
       ),
-    );
-  }
-
-  Widget _initBottomDrawerSheet() {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.2,
-      minChildSize: 0.1,
-      maxChildSize: 0.47,
-      builder: (BuildContext context, _scrollController) {
-        return Container(
-          decoration: ShapeDecoration(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      topRight: Radius.circular(30.0)))),
-          child: NotificationListener(
-            onNotification: (OverscrollIndicatorNotification overscroll) {
-              overscroll.disallowGlow();
-              return;
-            },
-            child: SingleChildScrollView(
-                controller: _scrollController,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    DragHandler(),
-                    Flexible(
-                      child: DrawerPage(context),
-                    )
-                  ],
-                )),
-          ),
-        );
-      },
     );
   }
 
@@ -142,7 +111,7 @@ class MainPageState extends State<MainPage>
 
   @override
   void dispose() {
-    mapController.future.then((value) => dispose());
+    mapController.dispose();
     super.dispose();
   }
 
@@ -160,56 +129,58 @@ class MainPageState extends State<MainPage>
 
   @override
   Widget build(BuildContext context) {
+    BorderRadiusGeometry radius = BorderRadius.only(
+      topLeft: Radius.circular(24.0),
+      topRight: Radius.circular(24.0),
+    );
+
     return Scaffold(
-        body: Stack(
-      children: [
-        GoogleMap(
-          zoomControlsEnabled: false,
-          mapType: MapType.hybrid,
-          markers: _markers,
-          circles: _circles,
-          onMapCreated: (GoogleMapController controller) {
-            controller.animateCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    target: LatLng(widget.locationData.latitude,
-                        widget.locationData.longitude),
-                    zoom: DEFAULT_ZOOM)));
-            mapController.complete(controller);
-          },
-          initialCameraPosition: CameraPosition(target: LatLng(0, 0)),
-          trafficEnabled: true,
+        body: SlidingUpPanel(
+      maxHeight: MediaQuery.of(context).size.height * 0.6,
+      panel: Center(
+        child: buildSlidingWidget(),
+      ),
+      collapsed: Container(
+        decoration: BoxDecoration(color: Colors.white, borderRadius: radius),
+        child: Center(
+          child: DragHandler.instance(context),
         ),
-        _initAppBar(context),
-        _initBottomDrawerSheet()
-      ],
+      ),
+      borderRadius: radius,
+      body: Stack(
+        children: [
+          GoogleMap(
+            zoomControlsEnabled: false,
+            mapType: MapType.terrain,
+            markers: _markers,
+            circles: _circles,
+            onMapCreated: (GoogleMapController controller) {
+              controller.animateCamera(CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                      target: LatLng(widget.locationData.latitude,
+                          widget.locationData.longitude),
+                      zoom: DEFAULT_ZOOM)));
+              mapControllerCompleter.complete(controller);
+              mapController = controller;
+            },
+            initialCameraPosition: CameraPosition(target: LatLng(0, 0)),
+            trafficEnabled: true,
+          ),
+          _initAppBar(context),
+        ],
+      ),
     ));
   }
 
-  _notificationIcon() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Ink(
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-        ),
-        child: IconButton(
-          alignment: Alignment.center,
-          splashRadius: 15.0,
-          onPressed: () {},
-          icon: Transform.scale(
-            scale: 1.0,
-            child: Lottie.asset(Res.notification_anim,
-                controller: controller, height: 30.0),
-          ),
-        ),
-      ),
+  Widget notificationIcon() {
+    return BubbleIcon(
+      icon: Lottie.asset(Res.notification_anim,
+          controller: controller, height: 30.0),
+      onPressed: () {},
     );
   }
 
-  _menuIcon() {
+  Widget leadingIcon() {
     return BubbleIcon(
       icon: SvgPicture.asset(Res.robot),
       onPressed: () {
@@ -222,7 +193,7 @@ class MainPageState extends State<MainPage>
     );
   }
 
-  _areaText(String areaText) {
+  Widget _areaText(String areaText) {
     return Container(
       padding: EdgeInsets.all(10.0),
       child: Row(
@@ -268,12 +239,7 @@ class MainPageState extends State<MainPage>
           )
         ],
       ),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-      ),
+      decoration: AppBarItemStyle.boxDecoration,
     );
   }
 
@@ -299,12 +265,7 @@ class MainPageState extends State<MainPage>
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Ink(
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-        ),
+        decoration: AppBarItemStyle.boxDecoration,
         child: PopupMenuButton(
           onSelected: (MenuActions result) async {
             switch (result) {
@@ -386,5 +347,33 @@ class MainPageState extends State<MainPage>
         strokeWidth: strokeWidth,
         strokeColor: circleColor.withOpacity(0.7),
         fillColor: circleColor.withOpacity(0.5)));
+  }
+
+  Widget buildSlidingWidget() {
+    return Container(
+      child: Container(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(child: DailySummary.instance()),
+            Material(
+              borderRadius: BorderRadius.circular(
+                30.0,
+              ),
+              child: IconButton(
+                splashRadius: 30.0,
+                icon: Icon(Icons.keyboard_arrow_down),
+                tooltip: "more",
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => MorePage(),
+                  ));
+                },
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

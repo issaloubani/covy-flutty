@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:covid_tracker_app/res.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -111,9 +112,9 @@ class _AppState extends State<App> {
       _checkBroadcast(message);
     }
 
-    print("Animation Triggered!!");
-    mainPageKey.currentState.controller.reset();
-    mainPageKey.currentState.controller.forward();
+    // print("Animation Triggered!!");
+    // mainPageKey.currentState.controller.reset();
+    // mainPageKey.currentState.controller.forward();
   }
 
   static Future<void> _checkBroadcast(Map<String, dynamic> message) async {
@@ -239,6 +240,7 @@ class _AppState extends State<App> {
   Future<void> _initApp() async {
     // get device token
     deviceToken = await _fcm.getToken();
+    UserCredential userCredential = await FirebaseAuth.instance.signInAnonymously();
     await createMetRef(deviceToken);
     await saveDeviceToken(deviceToken);
     locationData = await initLocation();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class DragHandler extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+class DragHandler {
+
+  static Widget instance(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
