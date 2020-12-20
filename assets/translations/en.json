@@ -1,4 +1,8 @@
 {
+  "languages": "Languages",
+  "language_name": "English",
+  "arabic": "Arabic",
+  "english": "English",
   "infected": "Infected",
   "recovered": "Recovered",
   "deaths": "Deaths",
