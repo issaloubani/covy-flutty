@@ -48,7 +48,9 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
-
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

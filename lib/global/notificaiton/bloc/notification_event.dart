@@ -16,3 +16,7 @@ class GotNotification extends NotificationEvent {
   @override
   List<Object> get props => [message];
 }
+
+class GetNotifications extends NotificationEvent{
+  const GetNotifications();
+}

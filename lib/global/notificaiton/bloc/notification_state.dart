@@ -11,7 +11,16 @@ abstract class NotificationState extends Equatable {
 class NotificationInitial extends NotificationState {
   const NotificationInitial();
 }
+class NotificationLoading extends NotificationState {
+  const NotificationLoading();
+}
+class NotificationLoaded extends NotificationState {
+ final QuerySnapshot notificationSnapshots;
+  const NotificationLoaded(this. notificationSnapshots);
 
+  @override
+  List<Object> get props => [notificationSnapshots];
+}
 class PresentNotification extends NotificationState {
   final Map<dynamic, dynamic> message;
 

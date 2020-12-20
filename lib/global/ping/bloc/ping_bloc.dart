@@ -49,8 +49,8 @@ class PingBloc extends Bloc<PingEvent, PingState> {
 
     if (event is ReceivePing) {
       //  yield PingResult();
-      double la = event.data['la'];
-      double lo = event.data['lo'];
+      double la =double.parse( event.data['la']);
+      double lo =double.parse( event.data['lo']);
       double distance = _calculateDistance(
           LatLng(locationData.latitude, locationData.longitude),
           LatLng(la, lo)); //

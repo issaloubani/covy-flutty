@@ -21,6 +21,14 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   Stream<NotificationState> mapEventToState(
     NotificationEvent event,
   ) async* {
+    if(event is GetNotifications){
+      yield NotificationLoading();
+      CollectionReference notifications =
+      firestoreService.getNotificationCollection(
+          await firestoreService.getCurrentDeviceProfile());
+      QuerySnapshot notificationSnapshots = await notifications.get();
+      yield NotificationLoaded(notificationSnapshots);
+    }
     if (event is GotNotification) {
       CollectionReference notifications =
           firestoreService.getNotificationCollection(
