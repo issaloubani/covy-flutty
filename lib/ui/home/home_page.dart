@@ -12,9 +12,10 @@ import 'package:covid_tracker_app/global/theme/theme_service.dart';
 import 'package:covid_tracker_app/res.dart';
 import 'package:covid_tracker_app/ui/chatbot/bot_page.dart';
 import 'package:covid_tracker_app/ui/expanded/expanded_page.dart';
+import 'package:covid_tracker_app/ui/notification/notification_page.dart';
 import 'package:covid_tracker_app/ui/settings/settings_page.dart';
 
-//import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,8 +35,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Completer<GoogleMapController> _controllerCompleter = Completer();
   LocationData currentLocationData;
+
   String title = "";
   String location = "";
+
   final Set<Map.Marker> _markers = HashSet<Map.Marker>();
   final Set<Map.Circle> _circles = HashSet<Map.Circle>();
   static const BorderRadius circular = BorderRadius.only(
@@ -116,7 +119,22 @@ class _HomePageState extends State<HomePage> {
           centerTitle: true,
           elevation: 0.0,
           leading: buildLeadingMenuBtn(),
-          actions: [buildMoreMenuBtn()],
+          actions: [Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Ink(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15.0),
+                boxShadow: [IconButtonTheme.shadow],
+              ),
+              child: IconButton(
+                splashRadius: 15.0,
+                onPressed: notificationButtonPressed,
+                icon: Icon(Icons.notifications),
+              ),
+            ),
+          ),buildMoreMenuBtn(),
+      ],
           title: buildTitle(),
         ));
   }
@@ -329,12 +347,8 @@ class _HomePageState extends State<HomePage> {
                     subtitle: Text(
                       DateFormat('EEEE d', context.locale.languageCode)
                           .format(DateTime.now()),
-                      style: TextStyle(
-                        color: Colors.white70
-                      ),
-                    )
-
-                    ),
+                      style: TextStyle(color: Colors.white70),
+                    )),
                 Divider(
                   color: Colors.white24,
                   height: 30,
@@ -402,9 +416,13 @@ class _HomePageState extends State<HomePage> {
   void robotButtonOnPressed() => Navigator.of(context).push(
       MaterialPageRoute(builder: (BuildContext context) => ChatBotPage()));
 
+  void notificationButtonPressed() => Navigator.of(context).push(
+      MaterialPageRoute(builder: (BuildContext context) => NotificationPage()));
+
   void onLocationLoaded(BuildContext context, LocationLoaded state) async {
     LatLng currentLocation =
         LatLng(state.locationData.latitude, state.locationData.longitude);
+
 
     currentLocationData = state.locationData;
     buildMapControllerAndNavigate(currentLocation);
@@ -421,7 +439,7 @@ class _HomePageState extends State<HomePage> {
       addCircularMarker(currentLocation);
       title = state.placemarks.first.country;
       location = state.placemarks.first.subAdministrativeArea +
-          ", " +
+          "," +
           state.placemarks.first.street;
     });
   }
@@ -464,9 +482,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void navigateToPage(Widget widget) async {
-    var page = await buildPageAsync(widget);
-    var route = MaterialPageRoute(builder: (_) => page, maintainState: false);
-    Navigator.push(context, route);
-  }
+// void navigateToPage(Widget widget) async {
+//   var page = await buildPageAsync(widget);
+//   var route = MaterialPageRoute(builder: (_) => page, maintainState: false);
+//   Navigator.push(context, route);
+// }
+
+
 }

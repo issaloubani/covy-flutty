@@ -27,7 +27,7 @@ abstract class MessageEvent extends FcmEvent {
 
   Map<dynamic, dynamic> getData() => this.message['data'];
 
-  Map<dynamic, dynamic> getNotification() {
+  Map<dynamic, dynamic> getSystemNotification() {
     return this.message["notification"];
   }
 
@@ -35,8 +35,8 @@ abstract class MessageEvent extends FcmEvent {
     return this.getData() != null;
   }
 
-  bool hasNotification() {
-    return this.getNotification() != null;
+  bool hasSystemNotification() {
+    return this.getSystemNotification() != null;
   }
 
   String getProtocol() {
@@ -46,6 +46,10 @@ abstract class MessageEvent extends FcmEvent {
 
   bool isPing() {
     return getProtocol().toLowerCase() == "ping";
+  }
+
+  bool isNotification() {
+    return getProtocol().toLowerCase() == "notification";
   }
 }
 

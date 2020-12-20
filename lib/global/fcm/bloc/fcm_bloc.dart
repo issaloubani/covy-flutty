@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:collection';
-
 import 'package:bloc/bloc.dart';
 import 'package:covid_tracker_app/global/firestore/firestore_service.dart';
+import 'package:covid_tracker_app/global/notificaiton/bloc/notification_bloc.dart';
 import 'package:covid_tracker_app/global/ping/bloc/ping_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -18,7 +17,7 @@ part 'fcm_state.dart';
 class FcmBloc extends Bloc<FcmEvent, FcmState> {
   final FirebaseMessaging firebaseMessaging;
   static BuildContext context;
-  final FirestoreService firestoreService = FirestoreService();
+  FirestoreService firestoreService = FirestoreService();
 
   FcmBloc(this.firebaseMessaging) : super(FcmInitial());
 
@@ -30,6 +29,7 @@ class FcmBloc extends Bloc<FcmEvent, FcmState> {
       context = event.context;
       // register
       await firestoreService.saveDeviceToken();
+
       // configure fcm
       firebaseMessaging.configure(
           onMessage: (Map<String, dynamic> message) async {
@@ -59,10 +59,17 @@ class FcmBloc extends Bloc<FcmEvent, FcmState> {
 
     // messages event
     if (event is OnMessageEvent) {
-      if (event.hasData() && event.isPing()) {
-        // Scaffold.of(context)
-        //     .showSnackBar(SnackBar(content: Text("This is a ping message !")));
-        context.bloc<PingBloc>().add(ReceivePing(event.getData()));
+      if (event.hasData()) {
+        if (event.isPing()) {
+          // Scaffold.of(context)
+          //     .showSnackBar(SnackBar(content: Text("This is a ping message !")));
+          context.bloc<PingBloc>().add(ReceivePing(event.getData()));
+        } else if (event.isNotification()) {
+          // show notification to user and save it to database
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text("You got a notification")));
+          context.bloc<NotificationBloc>().add(GotNotification(event.getData()));
+        }
       }
     }
   }

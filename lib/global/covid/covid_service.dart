@@ -50,7 +50,7 @@ class CovidService {
     // get the current day and the week before
     var now = DateTime.now();
     now = DateTime(now.year, now.month, now.day - 1);
-    var weekBeforeNow = DateTime(now.year, now.month, now.day - 8);
+    var weekBeforeNow = DateTime(now.year, now.month, now.day - 7);
 
     // initialise http request
     String today = "${now.year}-${now.month}-${now.day}T00:00:00Z";

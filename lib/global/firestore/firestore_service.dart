@@ -25,6 +25,11 @@ class FirestoreService {
     return deviceProfile.collection('met');
   }
 
+  CollectionReference getNotificationCollection(
+      DocumentReference deviceProfile) {
+    return deviceProfile.collection('notification');
+  }
+
   Future<void> saveDeviceToken() async {
     String token = await FirebaseMessaging().getToken();
     // try {

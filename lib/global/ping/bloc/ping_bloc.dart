@@ -56,8 +56,10 @@ class PingBloc extends Bloc<PingEvent, PingState> {
           LatLng(la, lo)); //
 
       if (distance < 2) {
+        yield PingActive();
         // notify the user and save the result
         await saveForeignDevice(event);
+        yield PingFinished();
       }
       // else do nothing he is far away
     }
