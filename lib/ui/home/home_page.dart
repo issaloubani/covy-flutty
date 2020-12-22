@@ -119,22 +119,24 @@ class _HomePageState extends State<HomePage> {
           centerTitle: true,
           elevation: 0.0,
           leading: buildLeadingMenuBtn(),
-          actions: [Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Ink(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15.0),
-                boxShadow: [IconButtonTheme.shadow],
-              ),
-              child: IconButton(
-                splashRadius: 15.0,
-                onPressed: notificationButtonPressed,
-                icon: Icon(Icons.notifications),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15.0),
+                  boxShadow: [IconButtonTheme.shadow],
+                ),
+                child: IconButton(
+                  splashRadius: 15.0,
+                  onPressed: notificationButtonPressed,
+                  icon: SvgPicture.asset(Res.pastel_notification),
+                ),
               ),
             ),
-          ),buildMoreMenuBtn(),
-      ],
+            buildMoreMenuBtn(),
+          ],
           title: buildTitle(),
         ));
   }
@@ -375,9 +377,13 @@ class _HomePageState extends State<HomePage> {
     return Align(
         alignment: Alignment.center,
         child: FlatButton(
+          shape: CircleBorder(),
           onPressed: navigationButtonPressed,
-          color: Colors.white24,
-          child: Icon(Icons.expand_more_rounded),
+          color: Colors.grey[200],
+          child: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Icon(Icons.expand_more_rounded),
+          ),
         ));
   }
 
@@ -422,7 +428,6 @@ class _HomePageState extends State<HomePage> {
   void onLocationLoaded(BuildContext context, LocationLoaded state) async {
     LatLng currentLocation =
         LatLng(state.locationData.latitude, state.locationData.longitude);
-
 
     currentLocationData = state.locationData;
     buildMapControllerAndNavigate(currentLocation);
@@ -487,6 +492,5 @@ class _HomePageState extends State<HomePage> {
 //   var route = MaterialPageRoute(builder: (_) => page, maintainState: false);
 //   Navigator.push(context, route);
 // }
-
 
 }

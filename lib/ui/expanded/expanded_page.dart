@@ -26,15 +26,27 @@ class _ExpandedPageState extends State<ExpandedPage> {
   final Map symptoms = {
     "cough".tr(): Res.cough,
     "fever".tr(): Res.fever,
-    "Fatigue": Res.fatigue,
-    "Problem Breathing": Res.problem_breathing,
+    "fatigue".tr(): Res.fatigue,
+    "problem_breathing".tr(): Res.problem_breathing,
   };
 
   final Map preventions = {
-    Res.avoid_crowd: ["Avoid Crowd", "Placeholder Description"],
-    Res.facial_mask: ["Facial Mask", "Placeholder Description"],
-    Res.stay_home: ["Stay Home", "Placeholder Description"],
-    Res.wash_hands: ["Wash Hands", "Placeholder Description"],
+    Res.avoid_crowd: [
+      "avoid_crowd".tr(),
+      "avoid_crowd_des".tr(),
+    ],
+    Res.facial_mask: [
+      "facial_mask".tr(),
+      "facial_mask_des".tr(),
+    ],
+    Res.stay_home: [
+      "stay_home".tr(),
+      "stay_home_des".tr(),
+    ],
+    Res.wash_hands: [
+      "wash_hands".tr(),
+      "wash_hands_des".tr(),
+    ],
   };
 
   final Map daysOfTheWeek = <int, String>{
@@ -102,29 +114,33 @@ class _ExpandedPageState extends State<ExpandedPage> {
               buildSymptomsTitle(),
               buildSymptoms(),
               buildPreventionsTitle(),
-              CarouselSlider.builder(
-                  itemCount: preventions.values.length,
-                  itemBuilder: (context, index) => buildPreventionCard(
-                      index + 1,
-                      preventions.keys.toList()[index],
-                      preventions.values.toList()[index][0],
-                      preventions.values.toList()[index][1]),
-                  options: CarouselOptions(
-                    viewportFraction: 1,
-                    autoPlay: true,
-                    autoPlayInterval: Duration(seconds: 3),
-                    autoPlayAnimationDuration: Duration(milliseconds: 800),
-                    autoPlayCurve: Curves.fastOutSlowIn,
-                    height: 250,
-                    //   aspectRatio: 16/9,
-                    //   enlargeCenterPage: true,
-                  )),
+              buildCarouselSlider(),
               buildHeartCard(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  CarouselSlider buildCarouselSlider() {
+    return CarouselSlider.builder(
+        itemCount: preventions.values.length,
+        itemBuilder: (context, index) => buildPreventionCard(
+            index + 1,
+            preventions.keys.toList()[index],
+            preventions.values.toList()[index][0],
+            preventions.values.toList()[index][1]),
+        options: CarouselOptions(
+          viewportFraction: 1,
+          autoPlay: true,
+          autoPlayInterval: Duration(seconds: 3),
+          autoPlayAnimationDuration: Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          height: 250,
+          //   aspectRatio: 16/9,
+          //   enlargeCenterPage: true,
+        ));
   }
 
   BlocConsumer<CovidBloc, CovidState> buildWeeklySummaryBloc() {
@@ -170,9 +186,10 @@ class _ExpandedPageState extends State<ExpandedPage> {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF8bcff7),
-            borderRadius: BorderRadius.circular(30.0),
-          ),
+              // color: const Color(0xFF8bcff7),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30.0),
+              boxShadow: [SlidingPanelTheme.shadow]),
           child: Column(
             children: [
               Align(
@@ -202,7 +219,7 @@ class _ExpandedPageState extends State<ExpandedPage> {
       child: Padding(
         padding: const EdgeInsets.all(30.0),
         child: Text(
-          "Preventions",
+          "preventions".tr(),
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -230,14 +247,7 @@ class _ExpandedPageState extends State<ExpandedPage> {
                 color: Colors.black,
                 fontSize: 24,
               ),
-              children: [
-                TextSpan(
-                    text: "Common",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    )),
-                TextSpan(text: " Symptoms"),
-              ]),
+              children: buildSymptomLogic()),
         ),
       ),
     );
@@ -479,8 +489,11 @@ class _ExpandedPageState extends State<ExpandedPage> {
               child: Text(
                 text,
                 softWrap: true,
+                maxLines: 3,
                 style: TextStyle(
-                    fontSize: Theme.of(context).textTheme.headline5.fontSize,
+                    fontWeight: FontWeight.bold,
+                   fontSize: 15,
+                   //    fontSize: Theme.of(context).textTheme.headline5.fontSize,
                     color: Colors.black87),
                 textAlign: TextAlign.center,
               ),
@@ -516,6 +529,28 @@ class _ExpandedPageState extends State<ExpandedPage> {
       backgroundColor: const Color(0xff222B45),
       elevation: 0,
     );
+  }
+
+  List<InlineSpan> buildSymptomLogic() {
+    if (context.locale.languageCode == 'ar') {
+      return [
+        TextSpan(text: "symptoms".tr() + " "),
+        TextSpan(
+            text: "common".tr(),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            )),
+      ];
+    } else {
+      return [
+        TextSpan(
+            text: "common".tr(),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            )),
+        TextSpan(text: " " + "symptoms".tr()),
+      ];
+    }
   }
 }
 
@@ -559,7 +594,9 @@ class HeartRateCard extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 20,),
+            SizedBox(
+              height: 20,
+            ),
             RaisedButton(
               elevation: 0,
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(

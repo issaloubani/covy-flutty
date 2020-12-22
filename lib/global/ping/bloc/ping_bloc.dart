@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:covid_tracker_app/global/fcm/fcm_service.dart';
 import 'package:equatable/equatable.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
@@ -15,6 +16,7 @@ part 'ping_state.dart';
 
 class PingBloc extends Bloc<PingEvent, PingState> {
   final PingService pingService;
+  final FCMService fcmService = FCMService();
   static LocationData locationData = LocationData.fromMap({
     'latitude': 0,
     'longitude': 0,
@@ -54,8 +56,8 @@ class PingBloc extends Bloc<PingEvent, PingState> {
       double distance = _calculateDistance(
           LatLng(locationData.latitude, locationData.longitude),
           LatLng(la, lo)); //
-
-      if (distance < 2) {
+      String senderToken = event.data['sender'];
+      if (distance < 2 && senderToken != await fcmService.getDeviceToken()) {
         yield PingActive();
         // notify the user and save the result
         await saveForeignDevice(event);
@@ -66,8 +68,8 @@ class PingBloc extends Bloc<PingEvent, PingState> {
   }
 
   Future saveForeignDevice(ReceivePing event) async {
-    double la = event.data['la'];
-    double lo = event.data['lo'];
+    double la =double.parse( event.data['la']);
+    double lo =double.parse( event.data['lo']);
     DocumentReference profile =
         await pingService.firestoreService.getCurrentDeviceProfile();
     CollectionReference met =

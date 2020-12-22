@@ -16,8 +16,8 @@ class CovidService {
   final Dio dio = Dio();
 
   // Cache Duration
-  Duration summaryCacheDuration = Duration(days: 1);
-  final Duration weeklySumCacheDuration = Duration(days: 1);
+  Duration summaryCacheDuration = Duration(hours: 3);
+  final Duration weeklySumCacheDuration = Duration(hours: 3);
 
   //const CovidService(this.dio);
   CovidService() {

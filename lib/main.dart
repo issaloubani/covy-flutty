@@ -2,6 +2,7 @@ import 'package:covid_tracker_app/global/chatbot/bloc/chat_bot_bloc.dart';
 import 'package:covid_tracker_app/global/chatbot/chatbot_service.dart';
 import 'package:covid_tracker_app/global/notificaiton/bloc/notification_bloc.dart';
 import 'package:covid_tracker_app/global/notificaiton/notifcation_service.dart';
+import 'package:covid_tracker_app/global/theme/bloc/theme_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -50,21 +51,20 @@ class App extends StatelessWidget {
         BlocProvider(
             create: (_) =>
                 LanguageBloc(EasyLocalization.of(context).locale.languageCode)),
+        BlocProvider(create: (_) => NotificationBloc(NotificationService())),
         BlocProvider(
-            create: (_) =>
-                NotificationBloc(NotificationService())),
-        BlocProvider(
-            create: (_) => ChatBotBloc(ChatBotService(Res.bot_service)))
+            create: (_) => ChatBotBloc(ChatBotService(Res.bot_service))),
+        BlocProvider(create: (_) => ThemeBloc())
       ],
-      child: buildMaterialApp(context),
+      child: BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, state) => buildMaterialApp(context, state),
+      ),
     );
   }
 
-  Widget buildMaterialApp(context) {
+  Widget buildMaterialApp(BuildContext context, ThemeState state) {
     return MaterialApp(
-        theme: ThemeData(
-          primaryColor: const Color(0xff222B45),
-        ),
+        theme: state.currentTheme,
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,

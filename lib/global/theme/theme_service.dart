@@ -1,6 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+enum AppTheme { dark, light }
+
+final appThemes = {
+  AppTheme.dark: ThemeData(
+    primaryColor: Colors.black,
+    brightness: Brightness.dark,
+  ),
+  AppTheme.light: ThemeData(
+    primaryColor: const Color(0xff222B45),
+    brightness: Brightness.light,
+  ),
+};
+
 // Button Chart Theme
 abstract class BarChartTheme {
   static const chartTextStyle = TextStyle(

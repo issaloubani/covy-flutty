@@ -105,6 +105,7 @@ flutter:
     - assets/icons/menu.svg
     - assets/icons/nose.svg
     - assets/icons/pastel_daily_cases.svg
+    - assets/icons/pastel_notification.svg
     - assets/icons/pastel_place.svg
     - assets/icons/pastel_robot.svg
     - assets/icons/pastel_settings.svg
