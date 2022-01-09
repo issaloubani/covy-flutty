@@ -20,7 +20,7 @@ The app currently support:
 - [x] Language localization (Currently only Arabic is supported)
 - [x] Dark Mode
 - [x] Chatbot to know latest info about covid
-- [x] Meassuring User's oxygen level and heart rate as a test for covid
+- [x] Measuring User's oxygen level and heart rate as a test for covid
 
 ## Motivation
 
