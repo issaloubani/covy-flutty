@@ -1,16 +1,34 @@
-# covid_tracker_app
+# Covy (Covid-19 App) in Flutter
 
-A new Flutter application.
+![App Poster](images/poster.png)
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Firebase](https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black)
+![Material UI](https://img.shields.io/badge/Material%20UI-007FFF?style=for-the-badge&logo=mui&logoColor=white)
 
-## Getting Started
+## About
 
-This project is a starting point for a Flutter application.
+A covid-19 app capable of providing user by information regarding the latest covid-19 cases (currently support lebanon) and his location, as well as providing a test to indicate if the user has covid-19 (still in beta).
 
-A few resources to get you started if this is your first Flutter project:
+## Features
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+The app currently support:
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [x] Show User Location
+- [x] Show latest covid cases in the current day (Only Lebanon is supported at the moment)
+- [x] Show summary of all covid cases in the week
+- [x] Give Tips about preventions and symptoms
+- [x] Language localization (Currently only Arabic is supported)
+- [x] Dark Mode
+- [x] Chatbot to know latest info about covid
+- [x] Meassuring User's oxygen level and heart rate as a test for covid
+
+## Motivation
+
+I built this app as a way to showcase my skills in flutter as well as helping others throughout these dire times through technology. The major feature I want to built is a way to test if the user truly has covid-19 through mobile phones, the oxygen level is used to indicate if the user has abnormal oxygen level and notify nearset hospital.
+
+## Future Updates
+
+- [ ] Notify the user if his oxygen level is abnormal
+- [ ] Show the user the nearst hospital in case of abnormal oxygen level
+- [ ] Notify the user of covid cases on map (Not done since no API is available with the location of the case of covid-19)
+- [ ] Notify the user to keep distance about 1 meter from others for achieving social distancing
