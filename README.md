@@ -9,9 +9,9 @@
 
 A covid-19 app capable of providing user by information regarding the latest covid-19 cases (currently support lebanon) and his location, as well as providing a test to indicate if the user has covid-19 (still in beta).
 
+## Demo
 
-https://user-images.githubusercontent.com/30502655/148705699-ae91ea5e-6754-48ad-afbc-1f0668209c54.mp4
-
+![App Demo](https://user-images.githubusercontent.com/30502655/148705699-ae91ea5e-6754-48ad-afbc-1f0668209c54.mp4)
 
 https://user-images.githubusercontent.com/30502655/148706013-5693fd72-1ce4-4fa0-b1f0-8cae17f4e773.mp4
 
