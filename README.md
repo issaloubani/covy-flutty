@@ -11,7 +11,7 @@ A covid-19 app capable of providing user by information regarding the latest cov
 
 ## Demo
 
-![App Demo](https://user-images.githubusercontent.com/30502655/148705699-ae91ea5e-6754-48ad-afbc-1f0668209c54.mp4)
+https://user-images.githubusercontent.com/30502655/148705699-ae91ea5e-6754-48ad-afbc-1f0668209c54.mp4
 
 https://user-images.githubusercontent.com/30502655/148706013-5693fd72-1ce4-4fa0-b1f0-8cae17f4e773.mp4
 
